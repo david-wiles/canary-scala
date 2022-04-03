@@ -12,29 +12,16 @@ object TaskBuilder {
    */
   def fromDir(dir: String): Option[ListBuffer[Task]] = {
     val directory = new File(dir)
-    var taskList: Option[ListBuffer[Task]] = Option(null)
+    var taskList: Option[ListBuffer[Task]] = None
 
     if (directory.exists && directory.isDirectory) {
       val tasks: ListBuffer[Task] = ListBuffer()
       for (file <- directory.listFiles if file.isDirectory) {
         tasks += Task.create(file.getAbsolutePath)
       }
-      taskList = Option(tasks)
+      taskList = Some(tasks)
     }
 
     taskList
   }
-
-  /**
-   * downloadPackages takes a package name and repository information and
-   * ensures that the package exists in the location specified by repo.
-   * This may download files from a remote server and save them on the user's system.
-   * If the package already exists, then nothing will change
-   *
-   * @param repo        the repository to use and local file storage
-   * @param packageName the package to install
-   */
-  def downloadPackage(repo: CanaryRepository, packageName: String): Unit = {}
-
-  def verify(location: String, key: String) = {}
 }

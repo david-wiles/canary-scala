@@ -18,6 +18,5 @@ object UpgradeCommand {
       |
       |Options:
       |    --repo URL for the repository to pull from
-      |    --local Path to local canary packages. Default location is ~/.canary
       |""".stripMargin
 }

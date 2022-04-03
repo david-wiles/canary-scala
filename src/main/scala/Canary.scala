@@ -7,7 +7,7 @@ object Canary {
   }
 
   def main(args: Array[String]): Unit = {
-    ArgParse.parse(args.toList)
+    (new ArgParse).parse(args.toList)
       .getOrElse(InvalidCommand("Something went wrong. Please contact the maintainers of canary and include steps to replicate the issue"))
       .run()
   }

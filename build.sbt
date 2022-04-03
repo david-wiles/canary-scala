@@ -4,5 +4,5 @@ ThisBuild / scalaVersion := "2.13.8"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "canary-scala"
-  )
+    name := "canary-scala",
+    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.9.2"  )
