@@ -1,11 +1,17 @@
 import java.net.URL
-import java.nio.file.Path
 
-case class InstallCommand(packages: List[String], url: URL, localPath: Path) extends Command {
+case class InstallCommand(packages: List[String], url: URL, localPath: String) extends Command {
   override def run(): Unit = {
-    println(packages)
-    println(url)
-    println(localPath)
+    val repo = new CanaryRepository(url.toString, localPath)
+
+    for (name <- packages) {
+      name.split("@") match {
+        case pkg :: version :: Nil =>
+          repo.downloadPackage(pkg.toString, version.toString)
+        case pkg :: Nil =>
+          repo.downloadPackage(pkg.toString)
+      }
+    }
   }
 }
 

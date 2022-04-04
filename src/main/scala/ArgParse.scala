@@ -59,7 +59,7 @@ class ArgParse {
       args match {
         case Nil =>
           if (packages.nonEmpty) {
-            Option(InstallCommand(packages, new URL(urlString), Paths.get(local)))
+            Option(InstallCommand(packages, new URL(urlString), local))
           } else {
             Option(InvalidCommand("Must provide a package to install" + sys.props("line.separator") + InstallCommand.usage))
           }
@@ -87,7 +87,7 @@ class ArgParse {
       args match {
         case Nil =>
           if (packages.nonEmpty) {
-            Option(UpgradeCommand(packages, new URL(urlString), Paths.get(local)))
+            Option(UpgradeCommand(packages, new URL(urlString), local))
           } else {
             Option(InvalidCommand("Must provide a package to upgrade" + sys.props("line.separator") + UpgradeCommand.usage))
           }
