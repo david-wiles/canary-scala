@@ -1,7 +1,5 @@
-import play.api.libs.json.{JsString, JsValue, Json}
-
 import java.nio.file.{Files, Paths}
-import scala.io.{BufferedSource, Source}
+import scala.io.Source
 import scala.io.StdIn.readLine
 
 /**
@@ -24,6 +22,7 @@ trait Task {
 object Task {
   /**
    * Create a task from the files in the directory at location
+   *
    * @param location a directory inside a canary package
    * @return
    */
@@ -40,36 +39,43 @@ object Task {
 /**
  * A properly formatted task will be created as a ScriptTask, which includes scripts to run
  * to analyze and fix issues
+ *
  * @param location the filename of the task's directory
  */
 class ScriptTask(location: String) extends Task {
-  private val configSource: BufferedSource = Source.fromFile(Paths.get(location, "config.json").toFile)
-  private val config: JsValue = Json.parse(try configSource.mkString finally configSource.close())
+  private var analyzeFilename: Option[String] = None
+  private var solutionFilename: Option[String] = None
+  private var description: String = location
+
+  private val source = Source.fromFile(Paths.get(location, "config.json").toFile)
+  for (line <- source.getLines())
+    line.split("=", 2) match {
+      case Array("analyze", value) => analyzeFilename = Some(value)
+      case Array("solution", value) => solutionFilename = Some(value)
+      case Array("description", value) => description = value
+    }
+  source.close()
+
 
   def doTask(autoFix: Boolean, skipFix: Boolean): Unit = {
-    val analyzeFile = config \ "analyze"
-    val solutionFile = config \ "solution"
-    val description = (config \ "description")
-      .getOrElse(JsString(location))
-
-    if (analyzeFile.isEmpty) {
+    if (analyzeFilename.isEmpty) {
       println(s"Cannot perform task $location: analyze file is not specified. Skipping...")
       return
     }
 
-    val analyzeProcess = new ProcessBuilder(Paths.get(location, analyzeFile.as[String]).toString)
+    val analyzeProcess = new ProcessBuilder(Paths.get(location, analyzeFilename.get).toString)
       .start()
 
     if (analyzeProcess.waitFor() != 0) {
-      println(Console.RED + "[FAIL] " + Console.WHITE + description.as[String])
+      println(Console.RED + "[FAIL] " + Console.WHITE + description)
 
       // Check if all conditions are met before running the solution file. The command must:
       // 1: not be run with --scan-only
       // 2: contain an executable file called solution.sh
       // 3: either be used with --auto-fix or user answered yes on prompt
-      if (!skipFix && !solutionFile.isEmpty && (autoFix || promptFix())) {
+      if (!skipFix && solutionFilename.isDefined && (autoFix || promptFix())) {
         println("Attempting to fix issue...")
-        val fixProcess = new ProcessBuilder(Paths.get(location, solutionFile.as[String]).toString)
+        val fixProcess = new ProcessBuilder(Paths.get(location, solutionFilename.get).toString)
           .start()
         if (fixProcess.waitFor() != 0) {
           println(Console.MAGENTA + "Solution file exited with non-zero status. You may need to fix this issue another way." + Console.WHITE)
@@ -78,7 +84,7 @@ class ScriptTask(location: String) extends Task {
         }
       }
     } else {
-      println(Console.GREEN + "[PASS] " + Console.WHITE + description.as[String])
+      println(Console.GREEN + "[PASS] " + Console.WHITE + description)
     }
   }
 
@@ -105,8 +111,8 @@ case class EmptyTask(location: String) extends Task {
   override def doTask(autoFix: Boolean, skipFix: Boolean): Unit = {
     println(
       s"""
-        |Unable to initialize task at $location. If this is a package, please contact the package's maintainers.
-        |If this is a custom scan, make sure an analyze.sh and description.txt file exist in the directory for this task.
-        |""".stripMargin)
+         |Unable to initialize task at $location. If this is a package, please contact the package's maintainers.
+         |If this is a custom scan, make sure an analyze.sh and description.txt file exist in the directory for this task.
+         |""".stripMargin)
   }
 }

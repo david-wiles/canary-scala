@@ -1,4 +1,3 @@
-import java.net.URL
 import java.nio.file.{Files, Paths}
 
 /**
@@ -6,12 +5,12 @@ import java.nio.file.{Files, Paths}
  * automatically installed to prevent unintentional actions on behalf of the user
  *
  * @param packages  list of packages to upgrade
- * @param url       canary remote repository
+ * @param domain       canary remote repository
  * @param localPath local canary root
  */
-case class UpgradeCommand(packages: List[String], url: URL, localPath: String) extends Command {
+case class UpgradeCommand(packages: List[String], domain: String, localPath: String) extends Command {
   override def run(): Unit = {
-    val repo = new CanaryRepository(url.toString, localPath)
+    val repo = new CanaryRepository(domain, localPath)
     for (name <- packages) {
       name.split('@') match {
         case Array(pkg, version) =>
@@ -21,7 +20,7 @@ case class UpgradeCommand(packages: List[String], url: URL, localPath: String) e
             println(s"Package has not been installed. You can install it with 'canary install $name'")
         case Array(pkg) =>
           if (Files.exists(Paths.get(localPath, pkg)))
-            repo.downloadPackage(pkg)
+            repo.downloadPackage(pkg, "latest")
           else
             println(s"Package has not been installed. You can install it with 'canary install $name'")
       }

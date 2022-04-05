@@ -9,12 +9,12 @@ import scala.io.Source
  * CanaryRepository stores state and methods required to download and update
  * canary packages
  *
- * @param url       url for the remote canary repository
+ * @param domain       url for the remote canary repository
  * @param localRoot local canary root
  */
-class CanaryRepository(url: String, localRoot: String) {
+class CanaryRepository(domain: String, localRoot: String) {
 
-  private val backend = HttpURLConnectionBackend()
+  private val backend = CurlBackend()
 
   /**
    * Checks whether the specified package exists in the repository
@@ -22,7 +22,7 @@ class CanaryRepository(url: String, localRoot: String) {
    * @param name name of the package. This should correspond to a tarball in the local directory
    * @return true if package exists, false if not
    */
-  def hasPackage(name: String, version: String = ""): Boolean = {
+  def hasPackage(name: String, version: String): Boolean = {
     if (version == "latest") {
       getLatestVersionString(name) match {
         case None => false
@@ -84,7 +84,7 @@ class CanaryRepository(url: String, localRoot: String) {
   def getLatestVersionString(name: String): Option[String] = {
     val resp = basicRequest
       .response(asString)
-      .get(uri"$url/$name/version.txt")
+      .get(uri"$domain/$name/version.txt")
       .send(backend)
 
     resp.body match {
@@ -103,7 +103,7 @@ class CanaryRepository(url: String, localRoot: String) {
    * @param version version to get. Default "latest"
    * @return error message if the package could not be downloaded or verified
    */
-  def downloadPackage(name: String, version: String = "latest"): Unit = {
+  def downloadPackage(name: String, version: String): Unit = {
     var versionCode = version
     if (version.equals("latest")) {
       getLatestVersionString(name) match {
@@ -119,19 +119,21 @@ class CanaryRepository(url: String, localRoot: String) {
 
     basicRequest
       .response(asFile(new File(Paths.get(localRoot, pkgFilename).toString)))
-      .get(uri"$url/$name/$pkgFilename")
+      .get(uri"$domain/$name/$pkgFilename")
       .send(backend)
       .body match {
       case Left(err) => println("Could not download package: " + err)
+      case Right(f) => println("Successfully downloaded package!")
     }
 
     // Verify checksum against remote
     basicRequest
       .response(asFile(new File(Paths.get(localRoot, pkgFilename + ".sum").toString)))
-      .get(uri"$url/$name/$pkgFilename.sum")
+      .get(uri"$domain/$name/$pkgFilename.sum")
       .send(backend)
       .body match {
       case Left(err) => println("Could not download checksum to verify package: " + err)
+      case Right(f) => println("Successfull downloaded checksum!")
     }
 
     // Verify checksum

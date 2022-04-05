@@ -1,18 +1,16 @@
-import java.net.URL
-
 /**
  * InstallCommand is used to install packages to the local canary root
  * @param packages  list of packages to install
- * @param url       url of remote canary repository
+ * @param domain       url of remote canary repository
  * @param localPath path to local canary root
  */
-case class InstallCommand(packages: List[String], url: URL, localPath: String) extends Command {
+case class InstallCommand(packages: List[String], domain: String, localPath: String) extends Command {
   override def run(): Unit = {
-    val repo = new CanaryRepository(url.toString, localPath)
+    val repo = new CanaryRepository(domain, localPath)
     for (name <- packages) {
       name.split('@') match {
         case Array(pkg, version) => repo.downloadPackage(pkg, version)
-        case Array(pkg) => repo.downloadPackage(pkg)
+        case Array(pkg) => repo.downloadPackage(pkg, "latest")
       }
     }
   }

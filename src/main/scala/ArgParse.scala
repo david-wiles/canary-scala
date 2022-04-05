@@ -1,6 +1,3 @@
-import java.net.URL
-import java.nio.file.{Path, Paths}
-
 /**
  * ArgParse provides a way to specify commands and arguments for Canary without any
  * extra third party packages. Parsing is simple and only full flags are supported.
@@ -77,7 +74,7 @@ class ArgParse {
       args match {
         case Nil =>
           if (packages.nonEmpty) {
-            Option(InstallCommand(packages, new URL(urlString), local))
+            Option(InstallCommand(packages, urlString, local))
           } else {
             Option(InvalidCommand("Must provide a package to install" + sys.props("line.separator") + InstallCommand.usage))
           }
@@ -111,7 +108,7 @@ class ArgParse {
       args match {
         case Nil =>
           if (packages.nonEmpty) {
-            Option(UpgradeCommand(packages, new URL(urlString), local))
+            Option(UpgradeCommand(packages, urlString, local))
           } else {
             Option(InvalidCommand("Must provide a package to upgrade" + sys.props("line.separator") + UpgradeCommand.usage))
           }
