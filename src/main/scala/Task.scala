@@ -4,11 +4,29 @@ import java.nio.file.{Files, Paths}
 import scala.io.{BufferedSource, Source}
 import scala.io.StdIn.readLine
 
+/**
+ * A Task is a single action that canary should perform during the CheckCommand run.
+ * This action should at least provide a way to scan the system for some issue and
+ * include a description of the issue. It may also optionally provide a way to fix
+ * the issue programmatically.
+ *
+ * These are built from canary packages and are specified by a config.json file in
+ * each child directory of the package. The config.json file can contain:
+ *
+ * "analyze": the path to the shell file to run to analyze the issue the task describes
+ * "solution": path to the shell file to fix the issue if it exists
+ * "description": a string describing the task
+ */
 trait Task {
   def doTask(autoFix: Boolean, skipFix: Boolean): Unit
 }
 
 object Task {
+  /**
+   * Create a task from the files in the directory at location
+   * @param location a directory inside a canary package
+   * @return
+   */
   def create(location: String): Task = {
     val configPath = Paths.get(location, "config.json")
     if (Files.exists(configPath)) {
@@ -19,6 +37,11 @@ object Task {
   }
 }
 
+/**
+ * A properly formatted task will be created as a ScriptTask, which includes scripts to run
+ * to analyze and fix issues
+ * @param location the filename of the task's directory
+ */
 class ScriptTask(location: String) extends Task {
   private val configSource: BufferedSource = Source.fromFile(Paths.get(location, "config.json").toFile)
   private val config: JsValue = Json.parse(try configSource.mkString finally configSource.close())

@@ -1,7 +1,11 @@
 import java.net.URL
 import java.nio.file.{Path, Paths}
 
-// https://stackoverflow.com/questions/2315912/best-way-to-parse-command-line-parameters
+/**
+ * ArgParse provides a way to specify commands and arguments for Canary without any
+ * extra third party packages. Parsing is simple and only full flags are supported.
+ * https://stackoverflow.com/questions/2315912/best-way-to-parse-command-line-parameters
+ */
 class ArgParse {
   val usage: String =
     """
@@ -38,6 +42,14 @@ class ArgParse {
     }
   }
 
+  /**
+   * Parse args used by all commands
+   *
+   * @param switch the flag found
+   * @param list   the rest of the command line arguments
+   * @param next   function to call for the next step in parsing flags
+   * @return
+   */
   private def parsePersistentArgs(switch: String, list: List[String], next: List[String] => Option[Command]): Option[Command] = {
     switch match {
       case "--local" =>
@@ -51,6 +63,12 @@ class ArgParse {
     }
   }
 
+  /**
+   * Parse flags used by the install command
+   *
+   * @param args command line arguments
+   * @return
+   */
   private def parseInstallArgs(args: List[String]): Option[Command] = {
     var packages: List[String] = List()
     var urlString = System.getenv("CANARY_REPO")
@@ -79,6 +97,12 @@ class ArgParse {
     _parse(args)
   }
 
+  /**
+   * Parse flags used by the upgrade command
+   *
+   * @param args command line arguments
+   * @return
+   */
   private def parseUpgradeArgs(args: List[String]): Option[Command] = {
     var packages: List[String] = List()
     var urlString = System.getenv("CANARY_REPO")
@@ -107,6 +131,12 @@ class ArgParse {
     _parse(args)
   }
 
+  /**
+   * Parse flags used by the check command
+   *
+   * @param args command line arguments
+   * @return
+   */
   private def parseCheckArgs(args: List[String]): Option[Command] = {
     var packages: List[String] = List()
     var dir: Option[String] = None

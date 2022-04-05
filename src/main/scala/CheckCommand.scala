@@ -3,7 +3,20 @@ import Canary.fatal
 import java.nio.file.Paths
 import scala.collection.mutable.ListBuffer
 
-case class CheckCommand(packages: List[String], directory: Option[String], localPath: String, autoFix: Boolean, scanOnly: Boolean) extends Command {
+/**
+ * CheckCommand gathers canary tasks and executes them
+ * @param packages  canary packages to analyze
+ * @param directory directory to analyze. Optional
+ * @param localPath local canary root
+ * @param autoFix   indicates issues found by tasks should be fixed without a prompt
+ * @param scanOnly  indicates that the user should not be prompted to fix issues. Overrides autoFix
+ */
+case class CheckCommand(packages: List[String],
+                        directory: Option[String],
+                        localPath: String,
+                        autoFix: Boolean,
+                        scanOnly: Boolean) extends Command {
+
   override def run(): Unit = {
     val tasks: ListBuffer[Task] = ListBuffer()
 
@@ -24,7 +37,7 @@ case class CheckCommand(packages: List[String], directory: Option[String], local
     // Iterate over package list and add all tasks from the package
     for (packageName <- packages) {
       tasks.addAll(
-        TaskBuilder.fromDir(Paths.get(localPath, packageName).toString)
+        TaskBuilder.fromPackage(localPath, packageName)
           .getOrElse({
             fatal("Fatal: " + packageName + " was not found. Please check your package install location or install it with 'canary install " + packageName + "'")
           })
