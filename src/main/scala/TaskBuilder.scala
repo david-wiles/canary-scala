@@ -1,5 +1,5 @@
 import java.io.File
-import java.nio.file.Paths
+import java.nio.file.{Files, Paths}
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -37,13 +37,17 @@ object TaskBuilder {
    * @return list of the tasks contained in the package
    */
   def fromPackage(root: String, pkgName: String): Option[ListBuffer[Task]] = {
-    pkgName.split('@') match {
-      case Array(name, version) => fromDir(Paths.get(root, name, version).toString)
+    val pkgDir = pkgName.split('@') match {
+      case Array(name, version) => Paths.get(root, name, version)
       case Array(name) =>
-        fromDir(
-          Paths.get(root, name, latestInstalledVersion(new File(Paths.get(root, name).toString).list())).toString
-        )
+        if (Files.exists(Paths.get(root, name))) {
+          val version = latestInstalledVersion(new File(Paths.get(root, name).toString).listFiles.map(f => f.getName))
+          Paths.get(root, name, version)
+        } else {
+          Paths.get(root, name)
+        }
     }
+    fromDir(pkgDir.toString)
   }
 
   /**

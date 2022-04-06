@@ -1,6 +1,5 @@
 import Canary.fatal
 
-import java.nio.file.Paths
 import scala.collection.mutable.ListBuffer
 
 /**

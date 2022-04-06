@@ -10,5 +10,6 @@ lazy val root = (project in file("."))
     name := "canary-scala",
     libraryDependencies += "com.softwaremill.sttp.client3" %% "core" % "3.5.1",
     libraryDependencies += "org.apache.commons" % "commons-compress" % "1.21",
+    libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.11" % "test",
     assembly / assemblyJarName := "canary.jar",
   )
