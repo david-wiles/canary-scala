@@ -14,17 +14,15 @@ object TaskBuilder {
    */
   def fromDir(dir: String): Option[ListBuffer[Task]] = {
     val directory = new File(dir)
-    var taskList: Option[ListBuffer[Task]] = None
-
     if (directory.exists && directory.isDirectory) {
       val tasks: ListBuffer[Task] = ListBuffer()
       for (file <- directory.listFiles if file.isDirectory) {
         tasks += Task.create(file.getAbsolutePath)
       }
-      taskList = Some(tasks)
+      Some(tasks)
+    } else {
+      None
     }
-
-    taskList
   }
 
   /**
