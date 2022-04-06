@@ -14,7 +14,7 @@ import scala.io.Source
  */
 class CanaryRepository(domain: String, localRoot: String) {
 
-  private val backend = CurlBackend()
+  private val backend = HttpURLConnectionBackend()
 
   /**
    * Checks whether the specified package exists in the repository

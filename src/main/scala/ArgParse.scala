@@ -24,7 +24,7 @@ class ArgParse {
   private var local: String = "~/.canary"
 
   def parse(args: List[String]): Option[Command] = {
-    if (args.isEmpty) Option(InvalidCommand(usage))
+    if (args.isEmpty) Option(HelpCommand(usage))
     else {
       args match {
         case Nil => Option(InvalidCommand(usage))
