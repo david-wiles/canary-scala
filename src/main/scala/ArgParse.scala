@@ -34,6 +34,7 @@ class ArgParse {
         case "upgrade" :: tail => parseUpgradeArgs(tail)
         case "check" :: "--help" :: tail => Option(HelpCommand(CheckCommand.usage))
         case "check" :: tail => parseCheckArgs(tail)
+        case "--help" :: tail => Option(HelpCommand(usage))
         case string :: tail => Option(InvalidCommand("Invalid command provided: " + string))
       }
     }
@@ -68,7 +69,7 @@ class ArgParse {
    */
   private def parseInstallArgs(args: List[String]): Option[Command] = {
     var packages: List[String] = List()
-    var urlString = System.getenv("CANARY_REPO")
+    var urlString = "https://canary.wiles.fyi"
 
     def _parse(args: List[String]): Option[Command] = {
       args match {

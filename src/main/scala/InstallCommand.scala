@@ -1,3 +1,5 @@
+import java.nio.file.{Files, Paths}
+
 /**
  * InstallCommand is used to install packages to the local canary root
  * @param packages  list of packages to install
@@ -6,6 +8,11 @@
  */
 case class InstallCommand(packages: List[String], domain: String, localPath: String) extends Command {
   override def run(): Unit = {
+    // Ensure canary root exists
+    if (!Files.exists(Paths.get(localPath)))
+      Files.createDirectories(Paths.get(localPath))
+
+    // Download packages
     val repo = new CanaryRepository(domain, localPath)
     for (name <- packages) {
       name.split('@') match {

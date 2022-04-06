@@ -34,17 +34,14 @@ object TaskBuilder {
    *
    * @param root    the canary package sources root
    * @param pkgName name of the package to gather tasks from, formatted as pkg@version
-   * @return
+   * @return list of the tasks contained in the package
    */
   def fromPackage(root: String, pkgName: String): Option[ListBuffer[Task]] = {
     pkgName.split('@') match {
       case Array(name, version) => fromDir(Paths.get(root, name, version).toString)
       case Array(name) =>
         fromDir(
-          Paths.get(
-            root,
-            name,
-            latestVersion(new File(Paths.get(root, name).toString).list())).toString
+          Paths.get(root, name, latestInstalledVersion(new File(Paths.get(root, name).toString).list())).toString
         )
     }
   }
@@ -53,9 +50,9 @@ object TaskBuilder {
    * Get the latest version number from a list of version numbers
    *
    * @param versions the list of version numbers
-   * @return
+   * @return string representing latest package version
    */
-  def latestVersion(versions: Array[String]): String = {
+  def latestInstalledVersion(versions: Array[String]): String = {
     var latest = Array(0, 0, 0)
     for (version <- versions) {
       version.split('.') match {
@@ -78,6 +75,6 @@ object TaskBuilder {
     }
     latest
       .map(v => v.toString)
-      .mkString
+      .mkString(".")
   }
 }

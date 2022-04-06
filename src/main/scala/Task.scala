@@ -8,8 +8,8 @@ import scala.io.StdIn.readLine
  * include a description of the issue. It may also optionally provide a way to fix
  * the issue programmatically.
  *
- * These are built from canary packages and are specified by a config.json file in
- * each child directory of the package. The config.json file can contain:
+ * These are built from canary packages and are specified by a config file in
+ * each child directory of the package. The config file can contain:
  *
  * "analyze": the path to the shell file to run to analyze the issue the task describes
  * "solution": path to the shell file to fix the issue if it exists
@@ -27,7 +27,7 @@ object Task {
    * @return
    */
   def create(location: String): Task = {
-    val configPath = Paths.get(location, "config.json")
+    val configPath = Paths.get(location, "config")
     if (Files.exists(configPath)) {
       new ScriptTask(location)
     } else {
@@ -47,7 +47,7 @@ class ScriptTask(location: String) extends Task {
   private var solutionFilename: Option[String] = None
   private var description: String = location
 
-  private val source = Source.fromFile(Paths.get(location, "config.json").toFile)
+  private val source = Source.fromFile(Paths.get(location, "config").toFile)
   for (line <- source.getLines())
     line.split("=", 2) match {
       case Array("analyze", value) => analyzeFilename = Some(value)

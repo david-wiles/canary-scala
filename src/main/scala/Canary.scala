@@ -4,7 +4,7 @@ object Canary {
   /**
    * Used whenever a fatal error occurs and the program should exit immediately.
    * @param message message to print prior to exit
-   * @return
+   * @return nothing
    */
   def fatal(message: String): Nothing = {
     println(message)
