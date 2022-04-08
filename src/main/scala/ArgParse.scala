@@ -1,3 +1,5 @@
+import java.nio.file.Paths
+
 /**
  * ArgParse provides a way to specify commands and arguments for Canary without any
  * extra third party packages. Parsing is simple and only full flags are supported.
@@ -21,7 +23,8 @@ class ArgParse {
       |Run 'canary COMMAND --help' to view more information about a command
       |""".stripMargin
 
-  private var local: String = "~/.canary"
+  private val repo: String = "https://canary.wiles.fyi"
+  private var local: String = Paths.get(System.getProperty("user.home"), ".canary").toString
 
   def parse(args: List[String]): Option[Command] = {
     if (args.isEmpty) Option(HelpCommand(usage))
@@ -34,6 +37,8 @@ class ArgParse {
         case "upgrade" :: tail => parseUpgradeArgs(tail)
         case "check" :: "--help" :: tail => Option(HelpCommand(CheckCommand.usage))
         case "check" :: tail => parseCheckArgs(tail)
+        case "remove" :: "--help" :: tail => Option(HelpCommand(RemoveCommand.usage))
+        case "remove" :: tail => parseRemoveArgs(tail)
         case "--help" :: tail => Option(HelpCommand(usage))
         case string :: tail => Option(InvalidCommand("Invalid command provided: " + string))
       }
@@ -69,7 +74,7 @@ class ArgParse {
    */
   private def parseInstallArgs(args: List[String]): Option[Command] = {
     var packages: List[String] = List()
-    var urlString = "https://canary.wiles.fyi"
+    var urlString = repo
 
     def _parse(args: List[String]): Option[Command] = {
       args match {
@@ -103,7 +108,7 @@ class ArgParse {
    */
   private def parseUpgradeArgs(args: List[String]): Option[Command] = {
     var packages: List[String] = List()
-    var urlString = System.getenv("CANARY_REPO")
+    var urlString = repo
 
     def _parse(args: List[String]): Option[Command] = {
       args match {
@@ -158,6 +163,34 @@ class ArgParse {
         case "--directory" :: path :: tail =>
           dir = Some(path)
           _parse(tail)
+        case string :: tail =>
+          if (string(0) == '-') {
+            parsePersistentArgs(string, tail, _parse)
+          } else {
+            packages = string :: packages
+            _parse(tail)
+          }
+      }
+    }
+
+    _parse(args)
+  }
+
+  /**
+   * Parse arguments to remove packages
+   * @param args command line arguments
+   * @return either a RemoveCommand, InvalidCommand, or HelpCommand
+   */
+  private def parseRemoveArgs(args: List[String]): Option[Command] = {
+    var packages: List[String] = List()
+
+    def _parse(args: List[String]): Option[Command] = {
+      args match {
+        case Nil =>
+          if (packages.isEmpty)
+            Option(InvalidCommand("Must provide a package to remove" + sys.props("line.separator") + RemoveCommand.usage))
+          else
+            Option(RemoveCommand(local, packages))
         case string :: tail =>
           if (string(0) == '-') {
             parsePersistentArgs(string, tail, _parse)
