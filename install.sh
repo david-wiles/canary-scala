@@ -20,7 +20,7 @@ cp ./target/scala-2.13/canary.jar "$1/jar/canary.jar"
 # Create executable
 cat <<EOF > $1/canary
 #!/bin/bash
-java -jar ./jar/canary.jar \$@
+java -jar $1/jar/canary.jar \$@
 EOF
 chmod 722 $1/canary
 
